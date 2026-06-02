@@ -266,14 +266,23 @@ export default function TrackerDetailScreen() {
           )}
 
 
-          {/* Delete tracker */}
-          <TouchableOpacity
-            style={styles.deleteBtn}
-            onPress={handleDeleteTracker}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.deleteBtnText}>Delete Tracker</Text>
-          </TouchableOpacity>
+          {/* Edit / Delete */}
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              style={styles.editBtn}
+              onPress={() => navigation.navigate('EditTracker', { trackerId })}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.editBtnText}>Edit Tracker</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.deleteBtn}
+              onPress={handleDeleteTracker}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.deleteBtnText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -373,11 +382,26 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   statsRow: { flexDirection: 'row', gap: spacing.sm },
-  deleteBtn: {
-    alignItems: 'center',
-    paddingVertical: spacing.md,
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginTop: spacing.sm,
     marginBottom: spacing.lg,
+  },
+  editBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+  },
+  editBtnText: {
+    ...typography.body,
+    color: colors.accent,
+    fontWeight: '500',
+  },
+  deleteBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.md,
   },
   deleteBtnText: {
     ...typography.body,

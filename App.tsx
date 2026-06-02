@@ -5,12 +5,14 @@ import HomeScreen from './src/screens/HomeScreen';
 import AddTrackerScreen from './src/screens/AddTrackerScreen';
 import TrackerDetailScreen from './src/screens/TrackerDetailScreen';
 import CompareScreen from './src/screens/CompareScreen';
+import EditTrackerScreen from './src/screens/EditTrackerScreen';
 import { colors } from './src/theme';
 
 export type RootStackParamList = {
   Home: undefined;
   AddTracker: undefined;
   TrackerDetail: { trackerId: string };
+  EditTracker: { trackerId: string };
   Compare: undefined;
 };
 
@@ -35,6 +37,7 @@ export default function App() {
           component={TrackerDetailScreen}
           options={{ title: '' }}
         />
+        <Stack.Screen name="EditTracker" component={EditTrackerScreen} options={{ title: 'Edit Tracker' }} />
         <Stack.Screen name="Compare" component={CompareScreen} options={{ title: 'Compare' }} />
       </Stack.Navigator>
     </NavigationContainer>
