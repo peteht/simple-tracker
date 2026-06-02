@@ -50,3 +50,25 @@ AsyncStorage CRUD + migration layer. 48 tests, 100% coverage on `src/utils`.
 ## Status
 
 Early development — features and design subject to change.
+
+---
+
+## Support
+
+If you run into a bug, have a question, or want to suggest a feature, open an issue in this repository:
+
+👉 **https://github.com/peteht/simple-tracker/issues/new**
+
+Please include what device you're using, what you expected to happen, and what actually happened.
+
+---
+
+## Privacy Policy
+
+Simple Tracker does not collect, store, or transmit any personal data.
+
+- All tracker data and entries are stored locally on your device only and never leave it.
+- The app does not use analytics, advertising, or third-party tracking of any kind.
+- The app does not require an account or any personal information to use.
+
+If you have questions, open an issue: https://github.com/peteht/simple-tracker/issues/new
