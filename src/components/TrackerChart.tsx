@@ -69,8 +69,10 @@ export default function TrackerChart({ entries, range, color, unit }: Props) {
     ` L ${points[points.length - 1].x} ${PADDING.top + innerH}` +
     ` L ${points[0].x} ${PADDING.top + innerH} Z`;
 
-  // Y-axis labels (3 ticks) — whole numbers only
-  const yTicks = [minVal, Math.round(minVal + valRange / 2), maxVal];
+  // Y-axis labels — whole numbers, deduped so tiny ranges don't repeat
+  const yTicks = Array.from(
+    new Set([minVal, Math.round(minVal + valRange / 2), maxVal])
+  ).sort((a, b) => a - b);
 
   // X-axis labels — show max 5 evenly spaced
   const maxLabels = 5;

@@ -3,58 +3,55 @@ import {
   View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Tracker, TimeRange } from '../types';
+import { Tracker, Entry, TimeRange } from '../types';
 import { getTrackers, getEntries } from '../utils/storage';
 import MultiChart, { TrackerSeries } from '../components/MultiChart';
 import TimeRangeSelector from '../components/TimeRangeSelector';
-import { colors, spacing, radius, typography } from '../theme';
+import { colors, spacing, radius, typography, card } from '../theme';
 
 const MAX_SELECTED = 3;
 
 export default function CompareScreen() {
   const [trackers, setTrackers] = useState<Tracker[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
-  const [seriesData, setSeriesData] = useState<TrackerSeries[]>([]);
+  const [entriesById, setEntriesById] = useState<Record<string, Entry[]>>({});
   const [range, setRange] = useState<TimeRange>('7D');
 
-  const load = useCallback(async () => {
-    const list = await getTrackers();
-    setTrackers(list);
-  }, []);
+  useFocusEffect(useCallback(() => {
+    // Refresh tracker list on focus so edits/deletes elsewhere show up.
+    getTrackers().then(setTrackers);
+  }, []));
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
-
-  // Reload entries whenever selection changes
-  const updateSeries = useCallback(async (ids: string[]) => {
-    const list = await getTrackers();
-    const series: TrackerSeries[] = [];
-    for (const id of ids) {
-      const tracker = list.find(t => t.id === id);
-      if (!tracker) continue;
-      const entries = await getEntries(id);
-      series.push({ tracker, entries });
-    }
-    setSeriesData(series);
-  }, []);
+  const loadEntriesFor = useCallback(async (id: string) => {
+    if (entriesById[id]) return; // already cached
+    const entries = await getEntries(id);
+    setEntriesById(prev => ({ ...prev, [id]: entries }));
+  }, [entriesById]);
 
   const toggleTracker = (id: string) => {
     setSelected(prev => {
-      const next = prev.includes(id)
-        ? prev.filter(x => x !== id)
-        : prev.length < MAX_SELECTED
-          ? [...prev, id]
-          : prev; // already at max — ignore tap
-      updateSeries(next);
-      return next;
+      if (prev.includes(id)) return prev.filter(x => x !== id);
+      if (prev.length >= MAX_SELECTED) return prev; // at max — ignore tap
+      loadEntriesFor(id);
+      return [...prev, id];
     });
   };
+
+  // Build series at render time from the live tracker list, so name/color
+  // edits are always current. Dropped trackers (deleted) fall out here.
+  const seriesData: TrackerSeries[] = selected
+    .map(id => {
+      const tracker = trackers.find(t => t.id === id);
+      return tracker ? { tracker, entries: entriesById[id] ?? [] } : null;
+    })
+    .filter((s): s is TrackerSeries => s !== null);
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll}>
 
         {/* Chart + time range */}
-        {selected.length > 0 ? (
+        {seriesData.length > 0 ? (
           <View style={styles.chartCard}>
             <TimeRangeSelector selected={range} onChange={setRange} />
             <View style={{ marginTop: spacing.md }}>
@@ -134,16 +131,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: spacing.lg, gap: spacing.md },
 
-  chartCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
+  chartCard: card,
 
   emptyChart: {
     backgroundColor: colors.surface,
@@ -171,19 +159,12 @@ const styles = StyleSheet.create({
   noTrackers: { ...typography.caption, color: colors.textMuted },
 
   trackerRow: {
+    ...card,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.md,
     gap: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
   },
   trackerRowDisabled: { opacity: 0.4 },
   colorDot: { width: 12, height: 12, borderRadius: 6 },

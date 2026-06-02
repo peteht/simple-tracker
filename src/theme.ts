@@ -43,3 +43,16 @@ export const typography = {
   caption: { fontSize: 13, fontWeight: '400' as const, color: colors.textSecondary },
   small: { fontSize: 11, fontWeight: '400' as const, color: colors.textMuted },
 };
+
+// Shared elevated-surface card (white bg, rounded, soft shadow).
+// Spread into a StyleSheet entry: { ...card, ...overrides }
+export const card = {
+  backgroundColor: colors.surface,
+  borderRadius: radius.md,
+  padding: spacing.md,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.06,
+  shadowRadius: 4,
+  elevation: 2,
+};

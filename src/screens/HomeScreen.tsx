@@ -7,7 +7,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Tracker } from '../types';
 import { getTrackers, getAllEntries, deleteTracker } from '../utils/storage';
-import { colors, spacing, radius, typography } from '../theme';
+import { colors, spacing, radius, typography, card as cardStyle } from '../theme';
 import { RootStackParamList } from '../../App';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'Home'>;
@@ -142,17 +142,10 @@ const styles = StyleSheet.create({
   addBtnText: { color: colors.white, fontWeight: '600', fontSize: 15 },
   list: { padding: spacing.lg, gap: spacing.sm },
   card: {
+    ...cardStyle,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.md,
     gap: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
   },
   dot: { width: 12, height: 12, borderRadius: 6 },
   cardBody: { flex: 1 },

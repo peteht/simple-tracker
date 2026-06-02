@@ -10,7 +10,7 @@ import { getTrackers, getEntries, saveEntry, deleteEntry, deleteTracker } from '
 import TrackerChart from '../components/TrackerChart';
 import YesNoChart from '../components/YesNoChart';
 import TimeRangeSelector from '../components/TimeRangeSelector';
-import { colors, spacing, radius, typography } from '../theme';
+import { colors, spacing, radius, typography, card } from '../theme';
 import { RootStackParamList } from '../../App';
 
 type RouteT = RouteProp<RootStackParamList, 'TrackerDetail'>;
@@ -300,16 +300,9 @@ function StatPill({ label, value }: { label: string; value: string }) {
 
 const statStyles = StyleSheet.create({
   pill: {
+    ...card,
     flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.md,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
   },
   value: { ...typography.subtitle, fontWeight: '700' },
   label: { ...typography.small, marginTop: 2 },
@@ -318,16 +311,7 @@ const statStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: spacing.lg, gap: spacing.md },
-  logCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
+  logCard: card,
   logLabel: {
     ...typography.small,
     fontWeight: '600',
@@ -371,16 +355,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm + 2,
   },
   logBtnText: { color: colors.white, fontWeight: '600', fontSize: 15 },
-  chartCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
+  chartCard: card,
   statsRow: { flexDirection: 'row', gap: spacing.sm },
   actionRow: {
     flexDirection: 'row',
