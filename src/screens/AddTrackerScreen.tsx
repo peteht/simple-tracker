@@ -30,7 +30,7 @@ export default function AddTrackerScreen() {
       name: name.trim(),
       unit: type === 'yesno' ? '' : unit.trim(),
       type,
-      cadence: type === 'yesno' ? cadence : 'daily',
+      cadence,
       createdAt: Date.now(),
       color: selectedColor,
     };
@@ -78,31 +78,27 @@ export default function AddTrackerScreen() {
             </TouchableOpacity>
           </View>
 
-          {type === 'yesno' && (
-            <>
-              <Text style={[styles.sectionLabel, { marginTop: spacing.lg }]}>HOW OFTEN</Text>
-              <View style={styles.typeRow}>
-                <TouchableOpacity
-                  style={[styles.typeBtn, cadence === 'daily' && styles.typeBtnActive]}
-                  onPress={() => setCadence('daily')}
-                  activeOpacity={0.8}
-                >
-                  <Text style={[styles.typeBtnText, cadence === 'daily' && styles.typeBtnTextActive]}>
-                    Daily
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.typeBtn, cadence === 'weekly' && styles.typeBtnActive]}
-                  onPress={() => setCadence('weekly')}
-                  activeOpacity={0.8}
-                >
-                  <Text style={[styles.typeBtnText, cadence === 'weekly' && styles.typeBtnTextActive]}>
-                    Weekly
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
+          <Text style={[styles.sectionLabel, { marginTop: spacing.lg }]}>HOW OFTEN</Text>
+          <View style={styles.typeRow}>
+            <TouchableOpacity
+              style={[styles.typeBtn, cadence === 'daily' && styles.typeBtnActive]}
+              onPress={() => setCadence('daily')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.typeBtnText, cadence === 'daily' && styles.typeBtnTextActive]}>
+                Daily
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.typeBtn, cadence === 'weekly' && styles.typeBtnActive]}
+              onPress={() => setCadence('weekly')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.typeBtnText, cadence === 'weekly' && styles.typeBtnTextActive]}>
+                Weekly
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           {type === 'number' && (
             <>

@@ -38,6 +38,26 @@ export default function TrackerDetailScreen() {
       Alert.alert('Invalid value', 'Please enter a number.');
       return;
     }
+    const existing = getCurrentPeriodEntry();
+    if (existing) {
+      const period = tracker?.cadence === 'weekly' ? 'this week' : 'today';
+      Alert.alert(
+        `Replace ${period}'s entry?`,
+        `You already logged ${existing.value}${tracker?.unit ? ' ' + tracker.unit : ''} ${period}. Replace it with ${num}${tracker?.unit ? ' ' + tracker.unit : ''}?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Replace',
+            onPress: async () => {
+              await deleteEntry(existing.id);
+              await logValue(num);
+              setValue('');
+            },
+          },
+        ]
+      );
+      return;
+    }
     await logValue(num);
     setValue('');
   };
