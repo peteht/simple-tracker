@@ -3,9 +3,10 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   SafeAreaView, ScrollView, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
-import { useFocusEffect, useRoute, RouteProp } from '@react-navigation/native';
+import { useFocusEffect, useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Tracker, Entry, TimeRange } from '../types';
-import { getTrackers, getEntries, saveEntry, deleteEntry } from '../utils/storage';
+import { getTrackers, getEntries, saveEntry, deleteEntry, deleteTracker } from '../utils/storage';
 import TrackerChart from '../components/TrackerChart';
 import YesNoChart from '../components/YesNoChart';
 import TimeRangeSelector from '../components/TimeRangeSelector';
@@ -14,8 +15,11 @@ import { RootStackParamList } from '../../App';
 
 type RouteT = RouteProp<RootStackParamList, 'TrackerDetail'>;
 
+type Nav = NativeStackNavigationProp<RootStackParamList, 'TrackerDetail'>;
+
 export default function TrackerDetailScreen() {
   const route = useRoute<RouteT>();
+  const navigation = useNavigation<Nav>();
   const { trackerId } = route.params;
 
   const [tracker, setTracker] = useState<Tracker | null>(null);
@@ -124,6 +128,24 @@ export default function TrackerDetailScreen() {
         onPress: async () => { await deleteEntry(entry.id); load(); },
       },
     ]);
+  };
+
+  const handleDeleteTracker = () => {
+    Alert.alert(
+      `Delete "${tracker?.name}"?`,
+      'This will permanently remove the tracker and all of its data. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteTracker(trackerId);
+            navigation.goBack();
+          },
+        },
+      ]
+    );
   };
 
   if (!tracker) return null;
@@ -288,6 +310,14 @@ export default function TrackerDetailScreen() {
               ))}
             </View>
           )}
+          {/* Delete tracker */}
+          <TouchableOpacity
+            style={styles.deleteBtn}
+            onPress={handleDeleteTracker}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.deleteBtnText}>Delete Tracker</Text>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -414,4 +444,15 @@ const styles = StyleSheet.create({
   historyDot: { width: 8, height: 8, borderRadius: 4 },
   historyValue: { ...typography.body, fontWeight: '500', flex: 1 },
   historyDate: { ...typography.caption },
+  deleteBtn: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  deleteBtnText: {
+    ...typography.body,
+    color: colors.danger,
+    fontWeight: '500',
+  },
 });
