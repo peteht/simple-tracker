@@ -131,26 +131,35 @@ export default function TrackerDetailScreen() {
                   <TouchableOpacity
                     style={[
                       styles.yesNoBtn,
-                      todayEntry?.value === 1 ? { backgroundColor: tracker.color } : styles.yesNoBtnInactive,
+                      todayEntry?.value === 1
+                        ? { backgroundColor: tracker.color, borderColor: tracker.color }
+                        : { borderColor: tracker.color },
                     ]}
                     onPress={() => handleLogYesNo(true)}
                     activeOpacity={0.85}
                   >
                     <Text style={[
                       styles.yesNoBtnText,
-                      todayEntry?.value !== 1 && { color: colors.textSecondary },
-                    ]}>✓  Yes</Text>
+                      { color: todayEntry?.value === 1 ? colors.white : tracker.color },
+                    ]}>
+                      {todayEntry?.value === 1 ? '✓  Yes' : 'Yes'}
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[
                       styles.yesNoBtn,
-                      todayEntry?.value === 0 ? styles.noBtnActive : styles.noBtn,
+                      todayEntry?.value === 0
+                        ? { backgroundColor: colors.danger, borderColor: colors.danger }
+                        : { borderColor: colors.danger },
                     ]}
                     onPress={() => handleLogYesNo(false)}
                     activeOpacity={0.85}
                   >
-                    <Text style={[styles.yesNoBtnText, { color: todayEntry?.value === 0 ? colors.white : colors.textSecondary }]}>
-                      ✗  No
+                    <Text style={[
+                      styles.yesNoBtnText,
+                      { color: todayEntry?.value === 0 ? colors.white : colors.danger },
+                    ]}>
+                      {todayEntry?.value === 0 ? '✗  No' : 'No'}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -306,21 +315,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: spacing.md,
     alignItems: 'center',
+    borderWidth: 2,
+    backgroundColor: 'transparent',
   },
-  yesNoBtnInactive: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  noBtn: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  noBtnActive: {
-    backgroundColor: colors.danger,
-  },
-  yesNoBtnText: { color: colors.white, fontWeight: '700', fontSize: 17 },
+  yesNoBtnText: { fontWeight: '700', fontSize: 17 },
   loggedNote: {
     ...typography.small,
     textAlign: 'center',
