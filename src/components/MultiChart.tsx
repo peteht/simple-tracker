@@ -19,6 +19,25 @@ const INNER_H = 180;
 const PAD = { top: 20, right: 16, bottom: 40, left: 52 };
 const YESNO_ROW_H = 28;
 
+function snapToBucket(ts: number, range: TimeRange): number {
+  const d = new Date(ts);
+  switch (range) {
+    case '24H':
+      d.setMinutes(0, 0, 0);
+      break;
+    case '7D':
+    case '1M':
+      d.setHours(0, 0, 0, 0);
+      break;
+    case '1Y':
+    case 'ALL':
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      break;
+  }
+  return d.getTime();
+}
+
 
 export default function MultiChart({ series, range }: Props) {
   const width = Dimensions.get('window').width - 64;
@@ -36,11 +55,12 @@ export default function MultiChart({ series, range }: Props) {
     const allEntries = withFiltered.flatMap(s => s.filtered);
     if (allEntries.length === 0) return null;
 
-    // --- X axis: global timestamp range ---
-    const globalMinTs = Math.min(...allEntries.map(e => e.timestamp));
-    const globalMaxTs = Math.max(...allEntries.map(e => e.timestamp));
+    // --- X axis: global timestamp range, snapped to bucket ---
+    const snapped = allEntries.map(e => snapToBucket(e.timestamp, range));
+    const globalMinTs = Math.min(...snapped);
+    const globalMaxTs = Math.max(...snapped);
     const tsSpan = globalMaxTs - globalMinTs || 1;
-    const toX = (ts: number) => PAD.left + ((ts - globalMinTs) / tsSpan) * innerW;
+    const toX = (ts: number) => PAD.left + ((snapToBucket(ts, range) - globalMinTs) / tsSpan) * innerW;
 
     // --- Y axis: global value range across all number trackers ---
     const numberEntries = withFiltered
