@@ -33,6 +33,7 @@ export default function TrackerDetailScreen() {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const handleLogNumber = async () => {
+    if (!value.trim()) return;
     const num = parseFloat(value);
     if (isNaN(num)) {
       Alert.alert('Invalid value', 'Please enter a number.');
