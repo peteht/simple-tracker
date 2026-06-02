@@ -43,6 +43,25 @@ export default function TrackerDetailScreen() {
   };
 
   const handleLogYesNo = async (yes: boolean) => {
+    const todayEntry = getTodayEntry();
+    if (todayEntry) {
+      if (todayEntry.value === (yes ? 1 : 0)) return; // same value, no-op
+      Alert.alert(
+        'Change today\'s entry?',
+        `You already logged ${todayEntry.value === 1 ? 'Yes' : 'No'} today. Change it to ${yes ? 'Yes' : 'No'}?`,
+        [
+          { text: 'Keep', style: 'cancel' },
+          {
+            text: 'Change',
+            onPress: async () => {
+              await deleteEntry(todayEntry.id);
+              await logValue(yes ? 1 : 0);
+            },
+          },
+        ]
+      );
+      return;
+    }
     await logValue(yes ? 1 : 0);
   };
 
@@ -55,6 +74,12 @@ export default function TrackerDetailScreen() {
     };
     await saveEntry(entry);
     load();
+  };
+
+  const getTodayEntry = (): Entry | null => {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    return entries.find(e => e.timestamp >= startOfToday.getTime()) ?? null;
   };
 
   const handleDeleteEntry = (entry: Entry) => {
@@ -75,6 +100,7 @@ export default function TrackerDetailScreen() {
 
   const isYesNo = tracker.type === 'yesno';
   const sortedDesc = [...entries].sort((a, b) => b.timestamp - a.timestamp);
+  const todayEntry = isYesNo ? getTodayEntry() : null;
 
   // Yes/No stats
   const yesCount = entries.filter(e => e.value === 1).length;
@@ -100,21 +126,39 @@ export default function TrackerDetailScreen() {
           <View style={styles.logCard}>
             <Text style={styles.logLabel}>LOG TODAY</Text>
             {isYesNo ? (
-              <View style={styles.yesNoRow}>
-                <TouchableOpacity
-                  style={[styles.yesNoBtn, { backgroundColor: tracker.color }]}
-                  onPress={() => handleLogYesNo(true)}
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.yesNoBtnText}>✓  Yes</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.yesNoBtn, styles.noBtn]}
-                  onPress={() => handleLogYesNo(false)}
-                  activeOpacity={0.85}
-                >
-                  <Text style={[styles.yesNoBtnText, { color: colors.textSecondary }]}>✗  No</Text>
-                </TouchableOpacity>
+              <View>
+                <View style={styles.yesNoRow}>
+                  <TouchableOpacity
+                    style={[
+                      styles.yesNoBtn,
+                      todayEntry?.value === 1 ? { backgroundColor: tracker.color } : styles.yesNoBtnInactive,
+                    ]}
+                    onPress={() => handleLogYesNo(true)}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={[
+                      styles.yesNoBtnText,
+                      todayEntry?.value !== 1 && { color: colors.textSecondary },
+                    ]}>✓  Yes</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.yesNoBtn,
+                      todayEntry?.value === 0 ? styles.noBtnActive : styles.noBtn,
+                    ]}
+                    onPress={() => handleLogYesNo(false)}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={[styles.yesNoBtnText, { color: todayEntry?.value === 0 ? colors.white : colors.textSecondary }]}>
+                      ✗  No
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                {todayEntry && (
+                  <Text style={styles.loggedNote}>
+                    Logged today · tap to change
+                  </Text>
+                )}
               </View>
             ) : (
               <View style={styles.logRow}>
@@ -263,12 +307,26 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     alignItems: 'center',
   },
+  yesNoBtnInactive: {
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
   noBtn: {
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.border,
   },
+  noBtnActive: {
+    backgroundColor: colors.danger,
+  },
   yesNoBtnText: { color: colors.white, fontWeight: '700', fontSize: 17 },
+  loggedNote: {
+    ...typography.small,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    color: colors.textMuted,
+  },
   logRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   logInput: {
     flex: 1,
