@@ -32,10 +32,10 @@ export async function updateTracker(updated: Tracker): Promise<void> {
 export async function deleteTracker(id: string): Promise<void> {
   const trackers = await getTrackers();
   await AsyncStorage.setItem(TRACKERS_KEY, JSON.stringify(trackers.filter(t => t.id !== id)));
-  const entries = await getEntries(id);
-  if (entries.length > 0) {
-    const all = await getAllEntries();
-    await AsyncStorage.setItem(ENTRIES_KEY, JSON.stringify(all.filter(e => e.trackerId !== id)));
+  const all = await getAllEntries();
+  const remaining = all.filter(e => e.trackerId !== id);
+  if (remaining.length !== all.length) {
+    await AsyncStorage.setItem(ENTRIES_KEY, JSON.stringify(remaining));
   }
 }
 

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Entry, TimeRange } from '../types';
 import { filterEntriesByRange, formatXLabel } from '../utils/timeRange';
-import { colors, spacing, radius, typography } from '../theme';
+import { colors, spacing, typography } from '../theme';
 
 interface DayBucket {
   label: string;
@@ -15,24 +15,9 @@ interface Props {
   color: string;
 }
 
-function startOfDay(ts: number) {
-  const d = new Date(ts);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
-}
-
 export default function YesNoChart({ entries, range, color }: Props) {
   const buckets = useMemo<DayBucket[]>(() => {
     const now = Date.now();
-
-    const rangeMs: Record<TimeRange, number> = {
-      '24H': 24 * 60 * 60 * 1000,
-      '7D':  7  * 24 * 60 * 60 * 1000,
-      '1M':  30 * 24 * 60 * 60 * 1000,
-      '1Y':  365 * 24 * 60 * 60 * 1000,
-      'ALL': Infinity,
-    };
-
     const filtered = filterEntriesByRange(entries, range);
 
     // Determine bucket size

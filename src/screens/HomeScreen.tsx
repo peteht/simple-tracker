@@ -6,7 +6,7 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Tracker } from '../types';
-import { getTrackers, getEntries, deleteTracker } from '../utils/storage';
+import { getTrackers, getAllEntries, deleteTracker } from '../utils/storage';
 import { colors, spacing, radius, typography } from '../theme';
 import { RootStackParamList } from '../../App';
 
@@ -18,12 +18,17 @@ export default function HomeScreen() {
   const [lastValues, setLastValues] = useState<Record<string, number | null>>({});
 
   const load = useCallback(async () => {
-    const list = await getTrackers();
+    const [list, allEntries] = await Promise.all([getTrackers(), getAllEntries()]);
     setTrackers(list);
+
+    // Single pass over all entries: keep the most recent value per tracker.
+    const latestTs: Record<string, number> = {};
     const vals: Record<string, number | null> = {};
-    for (const t of list) {
-      const entries = await getEntries(t.id);
-      vals[t.id] = entries.length > 0 ? entries[entries.length - 1].value : null;
+    for (const e of allEntries) {
+      if (latestTs[e.trackerId] === undefined || e.timestamp > latestTs[e.trackerId]) {
+        latestTs[e.trackerId] = e.timestamp;
+        vals[e.trackerId] = e.value;
+      }
     }
     setLastValues(vals);
   }, []);

@@ -8,7 +8,7 @@ export interface Tracker {
   name: string;
   unit: string;
   type: TrackerType;
-  cadence: TrackerCadence; // only used for yesno
+  cadence: TrackerCadence;
   createdAt: number;
   color: string;
 }
@@ -18,5 +18,4 @@ export interface Entry {
   trackerId: string;
   value: number;
   timestamp: number; // ms since epoch
-  note?: string;
 }

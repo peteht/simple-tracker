@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Svg, { Path, Circle, Line, Text as SvgText, Rect } from 'react-native-svg';
+import Svg, { Path, Circle, Line, Text as SvgText } from 'react-native-svg';
 import { Entry, TimeRange } from '../types';
 import { filterEntriesByRange, formatXLabel } from '../utils/timeRange';
 import { colors, typography } from '../theme';
