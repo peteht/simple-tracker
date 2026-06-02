@@ -116,19 +116,6 @@ export default function TrackerDetailScreen() {
     return entries.find(e => e.timestamp >= startOfToday.getTime()) ?? null;
   };
 
-  const handleDeleteEntry = (entry: Entry) => {
-    const label = tracker?.type === 'yesno'
-      ? (entry.value === 1 ? 'Yes' : 'No')
-      : `${entry.value}${tracker?.unit ? ' ' + tracker.unit : ''}`;
-    Alert.alert('Delete entry?', `Remove "${label}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => { await deleteEntry(entry.id); load(); },
-      },
-    ]);
-  };
 
   const handleDeleteTracker = () => {
     Alert.alert(
@@ -278,38 +265,7 @@ export default function TrackerDetailScreen() {
             </View>
           )}
 
-          {/* History */}
-          {sortedDesc.length > 0 && (
-            <View style={styles.historySection}>
-              <Text style={styles.sectionLabel}>HISTORY</Text>
-              {sortedDesc.map(entry => (
-                <TouchableOpacity
-                  key={entry.id}
-                  style={styles.historyRow}
-                  onLongPress={() => handleDeleteEntry(entry)}
-                  activeOpacity={0.7}
-                >
-                  <View
-                    style={[
-                      styles.historyDot,
-                      isYesNo
-                        ? { backgroundColor: entry.value === 1 ? tracker.color : colors.danger, opacity: entry.value === 1 ? 1 : 0.5 }
-                        : { backgroundColor: tracker.color },
-                    ]}
-                  />
-                  <Text style={styles.historyValue}>
-                    {isYesNo ? (entry.value === 1 ? 'Yes' : 'No') : `${entry.value}${tracker.unit ? ' ' + tracker.unit : ''}`}
-                  </Text>
-                  <Text style={styles.historyDate}>
-                    {new Date(entry.timestamp).toLocaleString([], {
-                      month: 'short', day: 'numeric',
-                      hour: '2-digit', minute: '2-digit',
-                    })}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+
           {/* Delete tracker */}
           <TouchableOpacity
             style={styles.deleteBtn}
@@ -417,33 +373,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   statsRow: { flexDirection: 'row', gap: spacing.sm },
-  historySection: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  sectionLabel: {
-    ...typography.small,
-    fontWeight: '600',
-    letterSpacing: 0.8,
-    marginBottom: spacing.sm,
-  },
-  historyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  historyDot: { width: 8, height: 8, borderRadius: 4 },
-  historyValue: { ...typography.body, fontWeight: '500', flex: 1 },
-  historyDate: { ...typography.caption },
   deleteBtn: {
     alignItems: 'center',
     paddingVertical: spacing.md,
