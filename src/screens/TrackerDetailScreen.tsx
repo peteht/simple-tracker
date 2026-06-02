@@ -38,9 +38,9 @@ export default function TrackerDetailScreen() {
 
   const handleLogNumber = async () => {
     if (!value.trim()) return;
-    const num = parseFloat(value);
-    if (isNaN(num)) {
-      Alert.alert('Invalid value', 'Please enter a number.');
+    const num = parseInt(value, 10);
+    if (isNaN(num) || num < 0) {
+      Alert.alert('Invalid value', 'Please enter a whole number.');
       return;
     }
     const existing = getCurrentPeriodEntry();
@@ -216,7 +216,7 @@ export default function TrackerDetailScreen() {
                   placeholderTextColor={colors.textMuted}
                   value={value}
                   onChangeText={setValue}
-                  keyboardType="decimal-pad"
+                  keyboardType="number-pad"
                   returnKeyType="done"
                   onSubmitEditing={handleLogNumber}
                 />

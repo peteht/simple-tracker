@@ -45,8 +45,10 @@ export default function TrackerChart({ entries, range, color, unit }: Props) {
   const innerH = CHART_HEIGHT - PADDING.top - PADDING.bottom;
 
   const values = filtered.map(e => e.value);
-  const minVal = Math.min(...values);
-  const maxVal = Math.max(...values);
+  const dataMin = Math.min(...values);
+  const dataMax = Math.max(...values);
+  const minVal = Math.max(0, dataMin);   // never go below zero
+  const maxVal = dataMax;
   const valRange = maxVal - minVal || 1;
 
   const toX = (i: number) => PADDING.left + (i / (filtered.length - 1)) * innerW;
@@ -67,8 +69,8 @@ export default function TrackerChart({ entries, range, color, unit }: Props) {
     ` L ${points[points.length - 1].x} ${PADDING.top + innerH}` +
     ` L ${points[0].x} ${PADDING.top + innerH} Z`;
 
-  // Y-axis labels (3 ticks)
-  const yTicks = [minVal, minVal + valRange / 2, maxVal];
+  // Y-axis labels (3 ticks) — whole numbers only
+  const yTicks = [minVal, Math.round(minVal + valRange / 2), maxVal];
 
   // X-axis labels — show max 5 evenly spaced
   const maxLabels = 5;
@@ -114,7 +116,7 @@ export default function TrackerChart({ entries, range, color, unit }: Props) {
           fontSize={11}
           fill={colors.textMuted}
         >
-          {Number.isInteger(tick) ? tick : tick.toFixed(1)}
+          {Math.round(tick)}
         </SvgText>
       ))}
 

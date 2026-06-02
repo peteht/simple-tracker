@@ -19,11 +19,6 @@ const INNER_H = 180;
 const PAD = { top: 20, right: 16, bottom: 40, left: 52 };
 const YESNO_ROW_H = 28;
 
-function niceLabel(value: number): string {
-  if (Math.abs(value) >= 1000) return `${(value / 1000).toFixed(1)}k`;
-  if (!Number.isInteger(value)) return value.toFixed(1);
-  return String(value);
-}
 
 export default function MultiChart({ series, range }: Props) {
   const width = Dimensions.get('window').width - 64;
@@ -56,18 +51,18 @@ export default function MultiChart({ series, range }: Props) {
     const rawMin = allValues.length > 0 ? Math.min(...allValues) : 0;
     const rawMax = allValues.length > 0 ? Math.max(...allValues) : 1;
 
-    // Pad the range a little so lines don't sit on the edge
-    const padding = (rawMax - rawMin) * 0.1 || 1;
-    const yMin = rawMin - padding;
-    const yMax = rawMax + padding;
-    const ySpan = yMax - yMin;
+    // Pad the top a little; floor at zero
+    const topPadding = (rawMax - rawMin) * 0.1 || 1;
+    const yMin = Math.max(0, rawMin);
+    const yMax = rawMax + topPadding;
+    const ySpan = yMax - yMin || 1;
 
     const toY = (v: number) => PAD.top + INNER_H - ((v - yMin) / ySpan) * INNER_H;
 
-    // 4 evenly spaced Y grid ticks using actual values
+    // 4 evenly spaced Y grid ticks — whole numbers only
     const yTicks = Array.from({ length: 4 }, (_, i) => {
-      const v = yMin + (i / 3) * ySpan;
-      return { y: toY(v), label: niceLabel(v) };
+      const v = Math.round(yMin + (i / 3) * ySpan);
+      return { y: toY(v), label: String(v) };
     });
 
     // Number tracker lines
