@@ -63,12 +63,7 @@ export default function CompareScreen() {
             {/* Legend */}
             <View style={styles.legend}>
               {seriesData.map(s => {
-                const latest = [...s.entries].sort((a, b) => b.timestamp - a.timestamp)[0];
-                const latestLabel = latest
-                  ? s.tracker.type === 'yesno'
-                    ? (latest.value === 1 ? 'Yes' : 'No')
-                    : `${latest.value}${s.tracker.unit ? ' ' + s.tracker.unit : ''}`
-                  : 'No data';
+                const latestLabel = s.tracker.type === 'yesno' ? 'Yes / No' : s.tracker.unit;
                 return (
                   <View key={s.tracker.id} style={styles.legendRow}>
                     <View style={[styles.legendDot, { backgroundColor: s.tracker.color }]} />
