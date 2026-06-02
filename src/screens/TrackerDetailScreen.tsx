@@ -7,6 +7,7 @@ import { useFocusEffect, useRoute, RouteProp } from '@react-navigation/native';
 import { Tracker, Entry, TimeRange } from '../types';
 import { getTrackers, getEntries, saveEntry, deleteEntry } from '../utils/storage';
 import TrackerChart from '../components/TrackerChart';
+import YesNoChart from '../components/YesNoChart';
 import TimeRangeSelector from '../components/TimeRangeSelector';
 import { colors, spacing, radius, typography } from '../theme';
 import { RootStackParamList } from '../../App';
@@ -31,12 +32,21 @@ export default function TrackerDetailScreen() {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const handleLog = async () => {
+  const handleLogNumber = async () => {
     const num = parseFloat(value);
     if (isNaN(num)) {
       Alert.alert('Invalid value', 'Please enter a number.');
       return;
     }
+    await logValue(num);
+    setValue('');
+  };
+
+  const handleLogYesNo = async (yes: boolean) => {
+    await logValue(yes ? 1 : 0);
+  };
+
+  const logValue = async (num: number) => {
     const entry: Entry = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       trackerId,
@@ -44,27 +54,38 @@ export default function TrackerDetailScreen() {
       timestamp: Date.now(),
     };
     await saveEntry(entry);
-    setValue('');
     load();
   };
 
   const handleDeleteEntry = (entry: Entry) => {
-    Alert.alert('Delete entry?', `Remove ${entry.value} ${tracker?.unit ?? ''}?`, [
+    const label = tracker?.type === 'yesno'
+      ? (entry.value === 1 ? 'Yes' : 'No')
+      : `${entry.value}${tracker?.unit ? ' ' + tracker.unit : ''}`;
+    Alert.alert('Delete entry?', `Remove "${label}"?`, [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
         style: 'destructive',
-        onPress: async () => {
-          await deleteEntry(entry.id);
-          load();
-        },
+        onPress: async () => { await deleteEntry(entry.id); load(); },
       },
     ]);
   };
 
   if (!tracker) return null;
 
+  const isYesNo = tracker.type === 'yesno';
   const sortedDesc = [...entries].sort((a, b) => b.timestamp - a.timestamp);
+
+  // Yes/No stats
+  const yesCount = entries.filter(e => e.value === 1).length;
+  const pct = entries.length > 0 ? Math.round((yesCount / entries.length) * 100) : 0;
+  const streak = (() => {
+    let s = 0;
+    for (const e of sortedDesc) {
+      if (e.value === 1) s++; else break;
+    }
+    return s;
+  })();
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -74,58 +95,85 @@ export default function TrackerDetailScreen() {
         keyboardVerticalOffset={100}
       >
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          {/* Log input */}
+
+          {/* Log card */}
           <View style={styles.logCard}>
-            <Text style={styles.logLabel}>LOG A VALUE</Text>
-            <View style={styles.logRow}>
-              <TextInput
-                style={styles.logInput}
-                placeholder="0"
-                placeholderTextColor={colors.textMuted}
-                value={value}
-                onChangeText={setValue}
-                keyboardType="decimal-pad"
-                returnKeyType="done"
-                onSubmitEditing={handleLog}
-              />
-              {tracker.unit ? (
-                <Text style={styles.unitLabel}>{tracker.unit}</Text>
-              ) : null}
-              <TouchableOpacity style={styles.logBtn} onPress={handleLog} activeOpacity={0.85}>
-                <Text style={styles.logBtnText}>Add</Text>
-              </TouchableOpacity>
-            </View>
+            <Text style={styles.logLabel}>LOG TODAY</Text>
+            {isYesNo ? (
+              <View style={styles.yesNoRow}>
+                <TouchableOpacity
+                  style={[styles.yesNoBtn, { backgroundColor: tracker.color }]}
+                  onPress={() => handleLogYesNo(true)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.yesNoBtnText}>✓  Yes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.yesNoBtn, styles.noBtn]}
+                  onPress={() => handleLogYesNo(false)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={[styles.yesNoBtnText, { color: colors.textSecondary }]}>✗  No</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.logRow}>
+                <TextInput
+                  style={styles.logInput}
+                  placeholder="0"
+                  placeholderTextColor={colors.textMuted}
+                  value={value}
+                  onChangeText={setValue}
+                  keyboardType="decimal-pad"
+                  returnKeyType="done"
+                  onSubmitEditing={handleLogNumber}
+                />
+                {tracker.unit ? <Text style={styles.unitLabel}>{tracker.unit}</Text> : null}
+                <TouchableOpacity style={styles.logBtn} onPress={handleLogNumber} activeOpacity={0.85}>
+                  <Text style={styles.logBtnText}>Add</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
           {/* Chart */}
           <View style={styles.chartCard}>
             <TimeRangeSelector selected={range} onChange={setRange} />
             <View style={{ marginTop: spacing.md }}>
-              <TrackerChart
-                entries={entries}
-                range={range}
-                color={tracker.color}
-                unit={tracker.unit}
-              />
+              {isYesNo ? (
+                <YesNoChart entries={entries} range={range} color={tracker.color} />
+              ) : (
+                <TrackerChart entries={entries} range={range} color={tracker.color} unit={tracker.unit} />
+              )}
             </View>
           </View>
 
           {/* Stats */}
           {entries.length > 0 && (
             <View style={styles.statsRow}>
-              <StatPill label="Entries" value={String(entries.length)} />
-              <StatPill
-                label="Latest"
-                value={`${sortedDesc[0].value}${tracker.unit ? ' ' + tracker.unit : ''}`}
-              />
-              <StatPill
-                label="Avg"
-                value={`${(entries.reduce((s, e) => s + e.value, 0) / entries.length).toFixed(1)}${tracker.unit ? ' ' + tracker.unit : ''}`}
-              />
+              {isYesNo ? (
+                <>
+                  <StatPill label="Total Yes" value={String(yesCount)} />
+                  <StatPill label="Yes Rate" value={`${pct}%`} />
+                  <StatPill label="Streak" value={`${streak} ✓`} />
+                </>
+              ) : (
+                <>
+                  <StatPill label="Entries" value={String(entries.length)} />
+                  <StatPill
+                    label="Latest"
+                    value={`${sortedDesc[0].value}${tracker.unit ? ' ' + tracker.unit : ''}`}
+                  />
+                  <StatPill
+                    label="Avg"
+                    value={`${(entries.reduce((s, e) => s + e.value, 0) / entries.length).toFixed(1)}${tracker.unit ? ' ' + tracker.unit : ''}`}
+                  />
+                </>
+              )}
             </View>
           )}
 
-          {/* History list */}
+          {/* History */}
           {sortedDesc.length > 0 && (
             <View style={styles.historySection}>
               <Text style={styles.sectionLabel}>HISTORY</Text>
@@ -136,16 +184,21 @@ export default function TrackerDetailScreen() {
                   onLongPress={() => handleDeleteEntry(entry)}
                   activeOpacity={0.7}
                 >
-                  <View style={[styles.historyDot, { backgroundColor: tracker.color }]} />
+                  <View
+                    style={[
+                      styles.historyDot,
+                      isYesNo
+                        ? { backgroundColor: entry.value === 1 ? tracker.color : colors.danger, opacity: entry.value === 1 ? 1 : 0.5 }
+                        : { backgroundColor: tracker.color },
+                    ]}
+                  />
                   <Text style={styles.historyValue}>
-                    {entry.value} {tracker.unit}
+                    {isYesNo ? (entry.value === 1 ? 'Yes' : 'No') : `${entry.value}${tracker.unit ? ' ' + tracker.unit : ''}`}
                   </Text>
                   <Text style={styles.historyDate}>
                     {new Date(entry.timestamp).toLocaleString([], {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
+                      month: 'short', day: 'numeric',
+                      hour: '2-digit', minute: '2-digit',
                     })}
                   </Text>
                 </TouchableOpacity>
@@ -203,6 +256,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     marginBottom: spacing.sm,
   },
+  yesNoRow: { flexDirection: 'row', gap: spacing.sm },
+  yesNoBtn: {
+    flex: 1,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    alignItems: 'center',
+  },
+  noBtn: {
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  yesNoBtnText: { color: colors.white, fontWeight: '700', fontSize: 17 },
   logRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   logInput: {
     flex: 1,

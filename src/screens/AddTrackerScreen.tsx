@@ -4,14 +4,19 @@ import {
   SafeAreaView, ScrollView, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { saveTracker } from '../utils/storage';
-import { Tracker } from '../types';
+import { Tracker, TrackerType } from '../types';
 import { colors, spacing, radius, typography, TRACKER_COLORS } from '../theme';
+import { RootStackParamList } from '../../App';
+
+type Nav = NativeStackNavigationProp<RootStackParamList, 'AddTracker'>;
 
 export default function AddTrackerScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<Nav>();
   const [name, setName] = useState('');
   const [unit, setUnit] = useState('');
+  const [type, setType] = useState<TrackerType>('number');
   const [selectedColor, setSelectedColor] = useState(TRACKER_COLORS[0]);
 
   const handleSave = async () => {
@@ -22,12 +27,13 @@ export default function AddTrackerScreen() {
     const tracker: Tracker = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       name: name.trim(),
-      unit: unit.trim(),
+      unit: type === 'yesno' ? '' : unit.trim(),
+      type,
       createdAt: Date.now(),
       color: selectedColor,
     };
     await saveTracker(tracker);
-    navigation.goBack();
+    navigation.replace('TrackerDetail', { trackerId: tracker.id });
   };
 
   return (
@@ -48,15 +54,41 @@ export default function AddTrackerScreen() {
             returnKeyType="next"
           />
 
-          <Text style={[styles.sectionLabel, { marginTop: spacing.lg }]}>UNIT (OPTIONAL)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. lbs, hrs, km, $…"
-            placeholderTextColor={colors.textMuted}
-            value={unit}
-            onChangeText={setUnit}
-            returnKeyType="done"
-          />
+          <Text style={[styles.sectionLabel, { marginTop: spacing.lg }]}>TYPE</Text>
+          <View style={styles.typeRow}>
+            <TouchableOpacity
+              style={[styles.typeBtn, type === 'number' && styles.typeBtnActive]}
+              onPress={() => setType('number')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.typeBtnText, type === 'number' && styles.typeBtnTextActive]}>
+                123  Number
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.typeBtn, type === 'yesno' && styles.typeBtnActive]}
+              onPress={() => setType('yesno')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.typeBtnText, type === 'yesno' && styles.typeBtnTextActive]}>
+                ✓/✗  Yes / No
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {type === 'number' && (
+            <>
+              <Text style={[styles.sectionLabel, { marginTop: spacing.lg }]}>UNIT (OPTIONAL)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. lbs, hrs, km, $…"
+                placeholderTextColor={colors.textMuted}
+                value={unit}
+                onChangeText={setUnit}
+                returnKeyType="done"
+              />
+            </>
+          )}
 
           <Text style={[styles.sectionLabel, { marginTop: spacing.lg }]}>COLOR</Text>
           <View style={styles.colorRow}>
@@ -100,6 +132,32 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  typeRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  typeBtn: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  typeBtnActive: {
+    borderColor: colors.accent,
+    backgroundColor: colors.accentLight,
+  },
+  typeBtnText: {
+    ...typography.body,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  typeBtnTextActive: {
+    color: colors.accent,
+    fontWeight: '600',
   },
   colorRow: {
     flexDirection: 'row',
