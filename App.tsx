@@ -1,20 +1,39 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import HomeScreen from './src/screens/HomeScreen';
+import AddTrackerScreen from './src/screens/AddTrackerScreen';
+import TrackerDetailScreen from './src/screens/TrackerDetailScreen';
+import { colors } from './src/theme';
+
+export type RootStackParamList = {
+  Home: undefined;
+  AddTracker: undefined;
+  TrackerDetail: { trackerId: string };
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: { backgroundColor: colors.background },
+          headerShadowVisible: false,
+          headerTintColor: colors.textPrimary,
+          headerTitleStyle: { fontWeight: '600', color: colors.textPrimary },
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      >
+        <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="AddTracker" component={AddTrackerScreen} options={{ title: 'New Tracker' }} />
+        <Stack.Screen
+          name="TrackerDetail"
+          component={TrackerDetailScreen}
+          options={{ title: '' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
