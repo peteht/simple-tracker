@@ -6,7 +6,14 @@ const ENTRIES_KEY = '@simple_tracker:entries';
 
 export async function getTrackers(): Promise<Tracker[]> {
   const raw = await AsyncStorage.getItem(TRACKERS_KEY);
-  return raw ? JSON.parse(raw) : [];
+  if (!raw) return [];
+  const trackers: Tracker[] = JSON.parse(raw);
+  // Backfill defaults for fields added after initial release
+  return trackers.map(t => ({
+    ...t,
+    cadence: t.cadence ?? 'daily',
+    type: t.type ?? 'number',
+  }));
 }
 
 export async function saveTracker(tracker: Tracker): Promise<void> {

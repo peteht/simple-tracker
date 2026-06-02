@@ -43,18 +43,19 @@ export default function TrackerDetailScreen() {
   };
 
   const handleLogYesNo = async (yes: boolean) => {
-    const todayEntry = getTodayEntry();
-    if (todayEntry) {
-      if (todayEntry.value === (yes ? 1 : 0)) return; // same value, no-op
+    const existing = getCurrentPeriodEntry();
+    if (existing) {
+      if (existing.value === (yes ? 1 : 0)) return; // same value, no-op
+      const period = tracker?.cadence === 'weekly' ? 'this week' : 'today';
       Alert.alert(
-        'Change today\'s entry?',
-        `You already logged ${todayEntry.value === 1 ? 'Yes' : 'No'} today. Change it to ${yes ? 'Yes' : 'No'}?`,
+        `Change ${period}'s entry?`,
+        `You already logged ${existing.value === 1 ? 'Yes' : 'No'} ${period}. Change it to ${yes ? 'Yes' : 'No'}?`,
         [
           { text: 'Keep', style: 'cancel' },
           {
             text: 'Change',
             onPress: async () => {
-              await deleteEntry(todayEntry.id);
+              await deleteEntry(existing.id);
               await logValue(yes ? 1 : 0);
             },
           },
@@ -76,7 +77,15 @@ export default function TrackerDetailScreen() {
     load();
   };
 
-  const getTodayEntry = (): Entry | null => {
+  const getCurrentPeriodEntry = (): Entry | null => {
+    if (tracker?.cadence === 'weekly') {
+      const now = new Date();
+      const daysFromMonday = now.getDay() === 0 ? 6 : now.getDay() - 1;
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - daysFromMonday);
+      startOfWeek.setHours(0, 0, 0, 0);
+      return entries.find(e => e.timestamp >= startOfWeek.getTime()) ?? null;
+    }
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
     return entries.find(e => e.timestamp >= startOfToday.getTime()) ?? null;
@@ -100,7 +109,7 @@ export default function TrackerDetailScreen() {
 
   const isYesNo = tracker.type === 'yesno';
   const sortedDesc = [...entries].sort((a, b) => b.timestamp - a.timestamp);
-  const todayEntry = isYesNo ? getTodayEntry() : null;
+  const todayEntry = isYesNo ? getCurrentPeriodEntry() : null;
 
   // Yes/No stats
   const yesCount = entries.filter(e => e.value === 1).length;
@@ -165,7 +174,7 @@ export default function TrackerDetailScreen() {
                 </View>
                 {todayEntry && (
                   <Text style={styles.loggedNote}>
-                    Logged today · tap to change
+                    Logged {tracker.cadence === 'weekly' ? 'this week' : 'today'} · tap to change
                   </Text>
                 )}
               </View>

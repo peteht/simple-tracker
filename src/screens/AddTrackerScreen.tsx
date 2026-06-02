@@ -6,7 +6,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { saveTracker } from '../utils/storage';
-import { Tracker, TrackerType } from '../types';
+import { Tracker, TrackerType, TrackerCadence } from '../types';
 import { colors, spacing, radius, typography, TRACKER_COLORS } from '../theme';
 import { RootStackParamList } from '../../App';
 
@@ -17,6 +17,7 @@ export default function AddTrackerScreen() {
   const [name, setName] = useState('');
   const [unit, setUnit] = useState('');
   const [type, setType] = useState<TrackerType>('number');
+  const [cadence, setCadence] = useState<TrackerCadence>('daily');
   const [selectedColor, setSelectedColor] = useState(TRACKER_COLORS[0]);
 
   const handleSave = async () => {
@@ -29,6 +30,7 @@ export default function AddTrackerScreen() {
       name: name.trim(),
       unit: type === 'yesno' ? '' : unit.trim(),
       type,
+      cadence: type === 'yesno' ? cadence : 'daily',
       createdAt: Date.now(),
       color: selectedColor,
     };
@@ -75,6 +77,32 @@ export default function AddTrackerScreen() {
               </Text>
             </TouchableOpacity>
           </View>
+
+          {type === 'yesno' && (
+            <>
+              <Text style={[styles.sectionLabel, { marginTop: spacing.lg }]}>HOW OFTEN</Text>
+              <View style={styles.typeRow}>
+                <TouchableOpacity
+                  style={[styles.typeBtn, cadence === 'daily' && styles.typeBtnActive]}
+                  onPress={() => setCadence('daily')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.typeBtnText, cadence === 'daily' && styles.typeBtnTextActive]}>
+                    Daily
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.typeBtn, cadence === 'weekly' && styles.typeBtnActive]}
+                  onPress={() => setCadence('weekly')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.typeBtnText, cadence === 'weekly' && styles.typeBtnTextActive]}>
+                    Weekly
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
 
           {type === 'number' && (
             <>
