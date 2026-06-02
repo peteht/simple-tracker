@@ -53,13 +53,24 @@ export default function HomeScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <View style={styles.header}>
         <Text style={styles.title}>Trackers</Text>
-        <TouchableOpacity
-          style={styles.addBtn}
-          onPress={() => navigation.navigate('AddTracker')}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.addBtnText}>+ New</Text>
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          {trackers.length > 1 && (
+            <TouchableOpacity
+              style={styles.compareBtn}
+              onPress={() => navigation.navigate('Compare')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.compareBtnText}>Compare</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => navigation.navigate('AddTracker')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.addBtnText}>+ New</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {trackers.length === 0 ? (
@@ -108,6 +119,15 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
   },
   title: { ...typography.largeTitle },
+  headerButtons: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
+  compareBtn: {
+    borderWidth: 1.5,
+    borderColor: colors.accent,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.lg,
+  },
+  compareBtnText: { color: colors.accent, fontWeight: '600', fontSize: 15 },
   addBtn: {
     backgroundColor: colors.accent,
     paddingHorizontal: spacing.md,

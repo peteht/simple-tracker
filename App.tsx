@@ -4,12 +4,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './src/screens/HomeScreen';
 import AddTrackerScreen from './src/screens/AddTrackerScreen';
 import TrackerDetailScreen from './src/screens/TrackerDetailScreen';
+import CompareScreen from './src/screens/CompareScreen';
 import { colors } from './src/theme';
 
 export type RootStackParamList = {
   Home: undefined;
   AddTracker: undefined;
   TrackerDetail: { trackerId: string };
+  Compare: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -33,6 +35,7 @@ export default function App() {
           component={TrackerDetailScreen}
           options={{ title: '' }}
         />
+        <Stack.Screen name="Compare" component={CompareScreen} options={{ title: 'Compare' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
