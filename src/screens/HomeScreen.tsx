@@ -7,6 +7,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Tracker } from '../types';
 import { getTrackers, getAllEntries, deleteTracker } from '../utils/storage';
+import { seedSampleData } from '../utils/devSeed';
 import { colors, spacing, radius, typography, card as cardStyle } from '../theme';
 import { RootStackParamList } from '../../App';
 
@@ -34,6 +35,24 @@ export default function HomeScreen() {
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const handleSeed = () => {
+    Alert.alert(
+      'Load sample data?',
+      'This replaces ALL current trackers and entries with ~6 months of generated sample data for testing.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Replace',
+          style: 'destructive',
+          onPress: async () => {
+            await seedSampleData();
+            load();
+          },
+        },
+      ]
+    );
+  };
 
   const handleDelete = (tracker: Tracker) => {
     Alert.alert(
@@ -82,12 +101,24 @@ export default function HomeScreen() {
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>Nothing tracked yet</Text>
           <Text style={styles.emptyBody}>Tap + New to create your first tracker.</Text>
+          {__DEV__ && (
+            <TouchableOpacity style={styles.devBtn} onPress={handleSeed} activeOpacity={0.8}>
+              <Text style={styles.devBtnText}>🌱 Load sample data (dev)</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <FlatList
           data={trackers}
           keyExtractor={t => t.id}
           contentContainerStyle={styles.list}
+          ListFooterComponent={
+            __DEV__ ? (
+              <TouchableOpacity style={styles.devBtn} onPress={handleSeed} activeOpacity={0.8}>
+                <Text style={styles.devBtnText}>🌱 Reset & load sample data (dev)</Text>
+              </TouchableOpacity>
+            ) : null
+          }
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.card}
@@ -152,6 +183,16 @@ const styles = StyleSheet.create({
   cardName: { ...typography.subtitle },
   cardLast: { ...typography.caption, marginTop: 2 },
   chevron: { fontSize: 22, color: colors.textMuted, marginTop: -1 },
+  devBtn: {
+    marginTop: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm + 2,
+    alignSelf: 'center',
+  },
+  devBtnText: { ...typography.caption, color: colors.textSecondary, fontWeight: '500' },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: spacing.sm },
   emptyTitle: { ...typography.title, color: colors.textSecondary },
   emptyBody: { ...typography.body, color: colors.textMuted, textAlign: 'center' },

@@ -58,3 +58,14 @@ export async function deleteEntry(id: string): Promise<void> {
   const all = await getAllEntries();
   await AsyncStorage.setItem(ENTRIES_KEY, JSON.stringify(all.filter(e => e.id !== id)));
 }
+
+/** Bulk-insert entries in a single write (used by dev seeding). */
+export async function addEntries(entries: Entry[]): Promise<void> {
+  const all = await getAllEntries();
+  await AsyncStorage.setItem(ENTRIES_KEY, JSON.stringify([...all, ...entries]));
+}
+
+/** Wipe all trackers and entries. */
+export async function clearAllData(): Promise<void> {
+  await AsyncStorage.multiRemove([TRACKERS_KEY, ENTRIES_KEY]);
+}
