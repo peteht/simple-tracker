@@ -29,3 +29,27 @@ export function formatXLabel(timestamp: number, range: TimeRange): string {
 }
 
 export const TIME_RANGES: TimeRange[] = ['24H', '7D', '1M', '1Y', 'ALL'];
+
+/**
+ * Snap a timestamp to the start of its bucket for the given range, so
+ * entries logged at different times within the same bucket align on the
+ * X axis. Hour for 24H, day for 7D/1M, month for 1Y/ALL.
+ */
+export function snapToBucket(ts: number, range: TimeRange): number {
+  const d = new Date(ts);
+  switch (range) {
+    case '24H':
+      d.setMinutes(0, 0, 0);
+      break;
+    case '7D':
+    case '1M':
+      d.setHours(0, 0, 0, 0);
+      break;
+    case '1Y':
+    case 'ALL':
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      break;
+  }
+  return d.getTime();
+}

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Path, Circle, Line, Text as SvgText } from 'react-native-svg';
 import { TimeRange, Tracker, Entry } from '../types';
-import { filterEntriesByRange, formatXLabel } from '../utils/timeRange';
+import { filterEntriesByRange, formatXLabel, snapToBucket } from '../utils/timeRange';
 import { colors, typography } from '../theme';
 
 export interface TrackerSeries {
@@ -18,26 +18,6 @@ interface Props {
 const INNER_H = 180;
 const PAD = { top: 20, right: 16, bottom: 40, left: 52 };
 const YESNO_ROW_H = 28;
-
-function snapToBucket(ts: number, range: TimeRange): number {
-  const d = new Date(ts);
-  switch (range) {
-    case '24H':
-      d.setMinutes(0, 0, 0);
-      break;
-    case '7D':
-    case '1M':
-      d.setHours(0, 0, 0, 0);
-      break;
-    case '1Y':
-    case 'ALL':
-      d.setDate(1);
-      d.setHours(0, 0, 0, 0);
-      break;
-  }
-  return d.getTime();
-}
-
 
 export default function MultiChart({ series, range }: Props) {
   const width = Dimensions.get('window').width - 64;

@@ -7,6 +7,8 @@ import { useFocusEffect, useRoute, useNavigation, RouteProp } from '@react-navig
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Tracker, Entry, TimeRange } from '../types';
 import { getTrackers, getEntries, saveEntry, deleteEntry, deleteTracker } from '../utils/storage';
+import { findCurrentPeriodEntry } from '../utils/period';
+import { average, yesCount, yesRate, currentStreak } from '../utils/stats';
 import TrackerChart from '../components/TrackerChart';
 import YesNoChart from '../components/YesNoChart';
 import TimeRangeSelector from '../components/TimeRangeSelector';
@@ -102,19 +104,8 @@ export default function TrackerDetailScreen() {
     load();
   };
 
-  const getCurrentPeriodEntry = (): Entry | null => {
-    if (tracker?.cadence === 'weekly') {
-      const now = new Date();
-      const daysFromMonday = now.getDay() === 0 ? 6 : now.getDay() - 1;
-      const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - daysFromMonday);
-      startOfWeek.setHours(0, 0, 0, 0);
-      return entries.find(e => e.timestamp >= startOfWeek.getTime()) ?? null;
-    }
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    return entries.find(e => e.timestamp >= startOfToday.getTime()) ?? null;
-  };
+  const getCurrentPeriodEntry = (): Entry | null =>
+    tracker ? findCurrentPeriodEntry(entries, tracker.cadence) : null;
 
 
   const handleDeleteTracker = () => {
@@ -142,15 +133,9 @@ export default function TrackerDetailScreen() {
   const todayEntry = isYesNo ? getCurrentPeriodEntry() : null;
 
   // Yes/No stats
-  const yesCount = entries.filter(e => e.value === 1).length;
-  const pct = entries.length > 0 ? Math.round((yesCount / entries.length) * 100) : 0;
-  const streak = (() => {
-    let s = 0;
-    for (const e of sortedDesc) {
-      if (e.value === 1) s++; else break;
-    }
-    return s;
-  })();
+  const totalYes = yesCount(entries);
+  const pct = yesRate(entries);
+  const streak = currentStreak(entries);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -245,7 +230,7 @@ export default function TrackerDetailScreen() {
             <View style={styles.statsRow}>
               {isYesNo ? (
                 <>
-                  <StatPill label="Total Yes" value={String(yesCount)} />
+                  <StatPill label="Total Yes" value={String(totalYes)} />
                   <StatPill label="Yes Rate" value={`${pct}%`} />
                   <StatPill label="Streak" value={`${streak} ✓`} />
                 </>
@@ -258,7 +243,7 @@ export default function TrackerDetailScreen() {
                   />
                   <StatPill
                     label="Avg"
-                    value={`${(entries.reduce((s, e) => s + e.value, 0) / entries.length).toFixed(1)}${tracker.unit ? ' ' + tracker.unit : ''}`}
+                    value={`${average(entries).toFixed(1)}${tracker.unit ? ' ' + tracker.unit : ''}`}
                   />
                 </>
               )}
